@@ -5,6 +5,7 @@ import path from "path";
 import { encodeAddress } from "@polkadot/util-crypto";
 import TransportNodeHID from "@ledgerhq/hw-transport-node-hid";
 import { PolkadotGenericApp } from "@zondax/ledger-substrate";
+import type { SignerPayloadJSON } from "@polkadot/types/types";
 
 const LEDGER_ACCOUNT_ADDRESS =
   "5EXb7e8Kq9m62XTFKVYmGsHFADU4knyFNg6NKJmLKDCz4Gij";
@@ -40,7 +41,7 @@ const PJS_PAYLOAD_BASE = {
   ],
   tip: "0x00000000000000000000000000000000",
   version: 4,
-};
+} as unknown as SignerPayloadJSON;
 
 /**
  * fetch dynamic inputs
@@ -86,22 +87,21 @@ registry15.setMetadata(metadata15, PJS_PAYLOAD_BASE.signedExtensions);
 /**
  * Craft final extrinsic payload
  */
-const extPayload = registry15.createType(
-  "ExtrinsicPayload",
-  {
-    ...PJS_PAYLOAD_BASE,
 
-    address: LEDGER_ACCOUNT_ADDRESS,
-    blockHash,
-    blockNumber: block.block.header.number,
-    nonce,
-    era: "0x", // immortal, to avoid computing a valid value
-    tip: "0x",
-    mode: 1,
-    metadataHash: "0x" + metadataHash,
-  },
-  { version: 4 }
-);
+const payload: SignerPayloadJSON = {
+  ...PJS_PAYLOAD_BASE,
+
+  address: LEDGER_ACCOUNT_ADDRESS,
+  blockHash,
+  blockNumber: block.block.header.number,
+  nonce,
+  era: "0x", // immortal, to avoid computing a valid value
+  tip: "0x",
+  mode: 1,
+  metadataHash: `0x${metadataHash}`,
+};
+
+const extPayload = registry15.createType("ExtrinsicPayload", payload);
 
 console.log("payload", extPayload.toHuman());
 console.log("payload hex", extPayload.toHex());
@@ -127,8 +127,22 @@ try {
   );
   console.log("signature", signature.toString("hex"));
 
-  const res = await provider.send("author_submitExtrinsic", [
+  const tx = registry15.createType(
+    "Extrinsic",
+    { method: PJS_PAYLOAD_BASE.method },
+    { version: PJS_PAYLOAD_BASE.version }
+  );
+
+  const signedPayload = tx.addSignature(
+    address,
     `0x${signature.toString("hex")}`,
+    payload
+  );
+
+  console.log("signed tx", signedPayload.toHex());
+
+  const res = await provider.send("author_submitExtrinsic", [
+    signedPayload.toHex(),
   ]);
   console.log("LFG", res);
 } catch (err) {
