@@ -44,15 +44,6 @@ const checkKeyPairSignature = async (
   message: string | Uint8Array
 ) => {
   try {
-    // const transport = await TransportNodeHID.create();
-    // const ledger = new PolkadotGenericApp(transport);
-
-    // const { address } = await ledger.getAddress(LEDGER_ACCOUNT_PATH, 42);
-
-    // const { signature } = await ledger.signRaw(
-    //   LEDGER_ACCOUNT_PATH,
-    //   Buffer.from(message)
-    // );
     const signature = pair.sign(message);
 
     logVerify(
