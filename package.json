@@ -12,8 +12,10 @@
     "@ledgerhq/hw-transport": "^6.30.6",
     "@ledgerhq/hw-transport-node-hid": "^6.28.6",
     "@polkadot/api": "^11.2.1",
+    "@polkadot/keyring": "^12.6.2",
     "@polkadot/types": "^11.2.1",
     "@polkadot/util": "^12.6.2",
-    "@zondax/ledger-substrate": "^0.44.2"
+    "@polkadot/util-crypto": "^12.6.2",
+    "@zondax/ledger-substrate": "^0.44.4"
   }
 }
